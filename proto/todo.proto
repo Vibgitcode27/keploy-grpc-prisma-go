@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+package todo;
+
+option go_package = "/krpg";
+
+message Todo {
+    string id = 1;         
+    string title = 2; 
+    string description = 3;
+    string due_date = 4;   
+    bool completed = 5;    
+}
+
+message CreateRequest {
+    string title = 1; 
+    string description = 2;
+    string due_date = 3;   
+}
+
+message CreateResponse {
+    Todo task = 1;         
+}
+
+message ReadRequest {
+    string id = 1;         
+}
+
+message ReadResponse {
+    Todo task = 1;         
+}
+
+message UpdateRequest {
+    string id = 1;         
+    string title = 2;      
+    string description = 3; 
+    string due_date = 4;   
+    bool completed = 5;    
+}
+
+message UpdateResponse {
+    Todo task = 1;         
+}
+
+message DeleteRequest {
+    string id = 1;
+}
+
+message DeleteResponse {
+    bool success = 1;
+}
+
+message ListRequest {
+    string filter = 1;
+}
+
+message ListResponse {
+    repeated Todo tasks = 1;
+}
+
+service TodoService {
+  rpc Create(CreateRequest) returns (CreateResponse) {}
+  rpc Read(ReadRequest) returns (ReadResponse) {}
+  rpc Update(UpdateRequest) returns (UpdateResponse) {}
+  rpc Delete(DeleteRequest) returns (DeleteResponse) {}
+  rpc List(ListRequest) returns (ListResponse) {}
+}
