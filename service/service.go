@@ -9,6 +9,7 @@ import (
 )
 
 type todoServer struct {
+	krpg.UnimplementedTodoServiceServer
 }
 
 func NewTodoServer() *todoServer {
@@ -26,6 +27,6 @@ func (server *todoServer) Create(ctx context.Context, req *krpg.CreateRequest) (
 		DueDate:     "2021-09-01",
 		Completed:   false,
 	}
-	log.Print("New todo created: \n", newTodo)
+	log.Printf("New todo created: Id=%s, Title=%s, Description=%s, DueDate=%s, Completed=%t", newTodo.Id, newTodo.Title, newTodo.Description, newTodo.DueDate, newTodo.Completed)
 	return &krpg.CreateResponse{Task: &newTodo}, nil
 }
