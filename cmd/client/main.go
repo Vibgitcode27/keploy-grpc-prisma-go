@@ -34,9 +34,9 @@ func main() {
 	if err != nil {
 		st, ok := status.FromError(err)
 		if ok && st.Code() == codes.AlreadyExists {
-			fmt.Println("Laptop already exists")
+			fmt.Println("todo already exists")
 		} else {
-			log.Fatal("Cannot create laptop(Response)", err)
+			log.Fatal("Cannot create todo(Response)", err)
 		}
 		return
 	}

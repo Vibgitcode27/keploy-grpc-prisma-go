@@ -1,23 +1,23 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"krpg/krpg"
 	"krpg/service"
-	"log"
 	"net"
+	"os"
 
+	"github.com/keploy/go-sdk/integrations/kgrpcserver"
 	"github.com/keploy/go-sdk/keploy"
-	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
 
 func main() {
+	fmt.Println("Starting main function")
 	port := flag.Int("port", 0, "The port to start the server on")
 	flag.Parse()
-	log.Printf("Starting server on port %d", *port)
+	fmt.Printf("Parsed port: %d\n", *port)
 
 	k := keploy.New(keploy.Config{
 		App: keploy.AppConfig{
@@ -28,42 +28,27 @@ func main() {
 			URL: "http://localhost:6789/api",
 		},
 	})
+	fmt.Println("Keploy instance created")
 
+	fmt.Println("Starting gRPC server setup")
 	todoServer := service.NewTodoServer()
-
-	grpcServer := grpc.NewServer(
-		grpc.UnaryInterceptor(yourUnaryInterceptor(k)),
-	)
-
+	grpcServer := grpc.NewServer(kgrpcserver.UnaryInterceptor(k))
 	krpg.RegisterTodoServiceServer(grpcServer, todoServer)
+	fmt.Println("gRPC server setup completed")
 
 	address := fmt.Sprintf("0.0.0.0:%d", *port)
+	fmt.Printf("Attempting to listen on: %s\n", address)
 	listener, err := net.Listen("tcp", address)
 	if err != nil {
-		log.Fatalf("Error starting server: %v", err)
+		fmt.Printf("Error listening: %v\n", err)
+		os.Exit(1)
 	}
+	fmt.Println("Listener created successfully")
 
+	fmt.Println("Starting gRPC server")
 	err = grpcServer.Serve(listener)
 	if err != nil {
-		log.Fatalf("Error starting server: %v", err)
-	}
-}
-
-func yourUnaryInterceptor(k *keploy.Keploy) grpc.UnaryServerInterceptor {
-	return func(
-		ctx context.Context,
-		req interface{},
-		info *grpc.UnaryServerInfo,
-		handler grpc.UnaryHandler,
-	) (resp interface{}, err error) {
-		k.Log.Info("Received request", zap.String("method", info.FullMethod))
-
-		resp, err = handler(ctx, req)
-
-		if err != nil {
-			k.Log.Error("Error processing request", zap.String("method", info.FullMethod), zap.Error(err))
-		}
-
-		return resp, err
+		fmt.Printf("Error starting server: %v\n", err)
+		os.Exit(1)
 	}
 }
