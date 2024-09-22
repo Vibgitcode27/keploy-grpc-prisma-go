@@ -8,7 +8,7 @@ client:
 	go run cmd/client/main.go -address 0.0.0.0:8000
 
 keploy:
-	GOPATH=$(HOME)/go keploy record -c "/usr/local/go/bin/go run cmd/server/main.go -port 8000"
+	keploy record --command "/usr/local/go/bin/go run cmd/server/main.go -port 8000" --proxy-port 9000
 
 start:
 	sudo -E make keploy

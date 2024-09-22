@@ -7,6 +7,8 @@ import (
 	"krpg/service"
 	"net"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/keploy/go-sdk/integrations/kgrpcserver"
 	"github.com/keploy/go-sdk/keploy"
@@ -14,8 +16,9 @@ import (
 )
 
 func main() {
-	fmt.Println("Starting main function")
-	port := flag.Int("port", 0, "The port to start the server on")
+	fmt.Println("Starting gRPC server with Keploy")
+
+	port := flag.Int("port", 8000, "The port to start the server on")
 	flag.Parse()
 	fmt.Printf("Parsed port: %d\n", *port)
 
@@ -24,13 +27,9 @@ func main() {
 			Name: "my-grpc-app",
 			Port: fmt.Sprintf("%d", *port),
 		},
-		Server: keploy.ServerConfig{
-			URL: "http://localhost:6789/api",
-		},
 	})
 	fmt.Println("Keploy instance created")
 
-	fmt.Println("Starting gRPC server setup")
 	todoServer := service.NewTodoServer()
 	grpcServer := grpc.NewServer(kgrpcserver.UnaryInterceptor(k))
 	krpg.RegisterTodoServiceServer(grpcServer, todoServer)
@@ -45,10 +44,17 @@ func main() {
 	}
 	fmt.Println("Listener created successfully")
 
-	fmt.Println("Starting gRPC server")
-	err = grpcServer.Serve(listener)
-	if err != nil {
-		fmt.Printf("Error starting server: %v\n", err)
-		os.Exit(1)
-	}
+	go func() {
+		if err := grpcServer.Serve(listener); err != nil {
+			fmt.Printf("Failed to serve: %v\n", err)
+		}
+	}()
+
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
+	sig := <-sigChan
+	fmt.Printf("Received signal: %v. Shutting down server...\n", sig)
+
+	grpcServer.GracefulStop()
+	fmt.Println("gRPC server stopped gracefully")
 }
