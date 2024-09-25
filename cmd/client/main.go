@@ -42,5 +42,4 @@ func main() {
 	}
 
 	fmt.Printf("Todo created with id: %s", res.Task.Id)
-
 }

@@ -10,8 +10,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/keploy/go-sdk/integrations/kgrpcserver"
-	"github.com/keploy/go-sdk/keploy"
+	// "github.com/keploy/go-sdk/v2/keploy"
 	"google.golang.org/grpc"
 )
 
@@ -22,16 +21,23 @@ func main() {
 	flag.Parse()
 	fmt.Printf("Parsed port: %d\n", *port)
 
-	k := keploy.New(keploy.Config{
-		App: keploy.AppConfig{
-			Name: "my-grpc-app",
-			Port: fmt.Sprintf("%d", *port),
-		},
-	})
-	fmt.Println("Keploy instance created")
+	// keployConfig := keploy.Config{
+	// 	Mode:  keploy.MODE_RECORD,
+	// 	Name:  "grpc-todo-service",
+	// 	Path:  "./mocks",
+	// 	Delay: 5,
+	// }
+
+	// err := keploy.New(keployConfig)
+	// if err != nil {
+	// 	fmt.Printf("Failed to initialize Keploy: %v\n", err)
+	// 	os.Exit(1)
+	// }
+	// fmt.Println("Keploy instance created")
 
 	todoServer := service.NewTodoServer()
-	grpcServer := grpc.NewServer(kgrpcserver.UnaryInterceptor(k))
+
+	grpcServer := grpc.NewServer()
 	krpg.RegisterTodoServiceServer(grpcServer, todoServer)
 	fmt.Println("gRPC server setup completed")
 
